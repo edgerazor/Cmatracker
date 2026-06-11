@@ -3,6 +3,7 @@ import { useAuth } from "./hooks/useAuth";
 import LoginPage from "./pages/Login";
 import AgentDashboard from "./pages/agent/Dashboard";
 import ClientDashboard from "./pages/client/Dashboard";
+import CmaBuilder from "./pages/agent/cma/CmaBuilder";
 
 function App() {
   const { isLoading, isAuthenticated, isAgent } = useAuth();
@@ -21,6 +22,10 @@ function App() {
       <Route path="/auth/verify">
         {/* Server handles redirect after verify — this is fallback */}
         <LoginPage />
+      </Route>
+
+      <Route path="/cma/new">
+        {isAuthenticated && isAgent ? <CmaBuilder /> : <Redirect to="/login" />}
       </Route>
 
       <Route path="/dashboard">

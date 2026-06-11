@@ -76,6 +76,17 @@ export default function LoginPage() {
         <p className="text-center text-[#484f58] text-xs mt-6">
           Gillette &amp; Associates · eXp Realty
         </p>
+
+        {import.meta.env.DEV && (
+          <button
+            onClick={() =>
+              fetch("/api/auth/dev-login", { method: "POST" }).then(() => location.assign("/dashboard"))
+            }
+            className="block mx-auto mt-4 text-xs text-[#484f58] hover:text-[#58a6ff] transition-colors"
+          >
+            ⚡ Dev sign-in (local only)
+          </button>
+        )}
       </div>
     </div>
   );

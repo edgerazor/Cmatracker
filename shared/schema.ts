@@ -181,6 +181,53 @@ export const probabilityConfig = pgTable("probability_config", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// ─── MARKET SNAPSHOTS (live tracker stats recorded over time) ────────────────
+export const marketSnapshots = pgTable("market_snapshots", {
+  id: serial("id").primaryKey(),
+  propertyId: integer("property_id").notNull().references(() => properties.id),
+  snapshotDate: timestamp("snapshot_date").defaultNow(),
+  monthsOfInventory: real("months_of_inventory"),
+  activeCount: integer("active_count"),
+  pendingCount: integer("pending_count"),
+  soldCount: integer("sold_count"),       // within the filter window
+  avgSoldPsf: real("avg_sold_psf"),
+  avgPendingPsf: real("avg_pending_psf"),
+  avgActivePsf: real("avg_active_psf"),
+  avgDomSold: integer("avg_dom_sold"),
+  newListings: jsonb("new_listings"),     // listings that appeared since last snapshot
+  newSales: jsonb("new_sales"),           // sales that closed since last snapshot
+});
+
+// ─── DOCUMENTS VAULT (per property: contracts, inspections, warranties) ──────
+export const documents = pgTable("documents", {
+  id: serial("id").primaryKey(),
+  propertyId: integer("property_id").notNull().references(() => properties.id),
+  title: text("title").notNull(),
+  category: text("category").notNull().default("other"), // contract | inspection | disclosure | warranty | other
+  fileName: text("file_name").notNull(),
+  fileUrl: text("file_url").notNull(),
+  fileSize: integer("file_size"),         // bytes
+  mimeType: text("mime_type"),
+  uploadedBy: text("uploaded_by"),        // agent | client
+  visibleToClient: boolean("visible_to_client").default(true),
+  expiryDate: timestamp("expiry_date"),   // for warranties — drives alerts
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// ─── HOME COMPONENTS (maintenance tracker: roof, furnace, hot water…) ────────
+export const homeComponents = pgTable("home_components", {
+  id: serial("id").primaryKey(),
+  propertyId: integer("property_id").notNull().references(() => properties.id),
+  componentType: text("component_type").notNull(), // roof | furnace | heat_pump | hot_water_tank | hot_water_tankless | appliance | other
+  label: text("label").notNull(),                  // "Asphalt shingle roof", "Rheem 50gal tank"
+  installedYear: integer("installed_year"),
+  expectedLifespanYears: integer("expected_lifespan_years"),
+  lastServicedAt: timestamp("last_serviced_at"),
+  serviceIntervalMonths: integer("service_interval_months"), // seasonal reminders
+  notes: text("notes"),                            // model #, contractor contact, paint color
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // ─── MAGIC LINK TOKENS ───────────────────────────────────────────────────────
 export const magicTokens = pgTable("magic_tokens", {
   id: serial("id").primaryKey(),
@@ -247,3 +294,9 @@ export type InsertShowing = typeof showings.$inferInsert;
 export type ShowingFeedback = typeof showingFeedback.$inferSelect;
 export type InsertShowingFeedback = typeof showingFeedback.$inferInsert;
 export type ProbabilityConfig = typeof probabilityConfig.$inferSelect;
+export type MarketSnapshot = typeof marketSnapshots.$inferSelect;
+export type InsertMarketSnapshot = typeof marketSnapshots.$inferInsert;
+export type Document = typeof documents.$inferSelect;
+export type InsertDocument = typeof documents.$inferInsert;
+export type HomeComponent = typeof homeComponents.$inferSelect;
+export type InsertHomeComponent = typeof homeComponents.$inferInsert;

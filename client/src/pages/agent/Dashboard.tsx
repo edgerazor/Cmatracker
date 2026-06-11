@@ -1,8 +1,10 @@
+import { useLocation } from "wouter";
 import { useAuth } from "../../hooks/useAuth";
 import { getGreeting } from "../../lib/utils";
 
 export default function AgentDashboard() {
   const { user } = useAuth();
+  const [, navigate] = useLocation();
 
   return (
     <div className="min-h-screen bg-[#0d1117]">
@@ -42,7 +44,7 @@ export default function AgentDashboard() {
             description="Start a new evaluation"
             icon="＋"
             color="blue"
-            onClick={() => {}}
+            onClick={() => navigate("/cma/new")}
           />
           <ActionCard
             label="Active Listings"

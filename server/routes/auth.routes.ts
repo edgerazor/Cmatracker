@@ -46,6 +46,29 @@ router.get("/verify", async (req, res) => {
   return res.redirect(`${process.env.APP_URL}/dashboard`);
 });
 
+// POST /api/auth/dev-login — development only: seeds + signs in as the first agent
+router.post("/dev-login", async (req, res) => {
+  if (process.env.NODE_ENV === "production") {
+    return res.status(404).json({ error: "Not found" });
+  }
+  let [agent] = await db.select().from(agents).limit(1);
+  if (!agent) {
+    [agent] = await db
+      .insert(agents)
+      .values({
+        name: "Derek Gillette",
+        email: "derekgillette1@gmail.com",
+        title: "REALTOR® · eXp Realty",
+        brokerage: "eXp Realty",
+        websiteUrl: "https://derekgillette.com",
+        isAdmin: true,
+      })
+      .returning();
+  }
+  req.session.agentId = agent.id;
+  res.json({ ok: true, agent: { id: agent.id, name: agent.name } });
+});
+
 // POST /api/auth/logout
 router.post("/logout", (req, res) => {
   req.session.destroy(() => res.json({ ok: true }));
