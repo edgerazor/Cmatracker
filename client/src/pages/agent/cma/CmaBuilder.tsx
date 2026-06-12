@@ -61,6 +61,52 @@ function applyLocalFilters(props: MlsProperty[], f: CmaFilters): MlsProperty[] {
   });
 }
 
+/** Pre-results staging screen: agent builds criteria, watches the live count, then reveals */
+function CriteriaStaging({
+  count, loading, hasCriteria, onReveal,
+}: { count: number; loading: boolean; hasCriteria: boolean; onReveal: () => void }) {
+  return (
+    <div className="flex-1 flex items-center justify-center">
+      <div className="text-center max-w-sm px-6">
+        <div
+          className={`text-7xl font-extrabold tabular-nums transition-colors duration-300 ${
+            count > 0 ? "text-white" : "text-[#21262d]"
+          }`}
+        >
+          {loading ? <span className="text-[#30363d]">…</span> : count.toLocaleString()}
+        </div>
+        <div className="text-[11px] font-bold uppercase tracking-widest text-[#484f58] mt-2">
+          Matching listings
+        </div>
+
+        {!hasCriteria ? (
+          <p className="text-sm text-[#8b949e] mt-6 leading-relaxed">
+            Start building your search on the left —<br />
+            pick a <strong className="text-white">status</strong> and{" "}
+            <strong className="text-white">property type</strong>, then narrow it down.
+          </p>
+        ) : (
+          <p className="text-sm text-[#8b949e] mt-6">
+            Keep narrowing, or reveal the results when the set looks right.
+          </p>
+        )}
+
+        <button
+          onClick={onReveal}
+          disabled={count === 0}
+          className={`mt-8 px-8 py-3 rounded-xl text-sm font-bold transition-all duration-200 ${
+            count > 0
+              ? "bg-gradient-to-r from-[#388bfd] to-[#58a6ff] text-white shadow-lg shadow-[#388bfd]/25 hover:shadow-[#388bfd]/40 hover:-translate-y-0.5"
+              : "bg-[#161b22] text-[#484f58] border border-[#21262d] cursor-not-allowed"
+          }`}
+        >
+          {count > 0 ? `Show ${count.toLocaleString()} matches →` : "Select criteria to begin"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function CmaBuilder() {
   const [filters, setFilters] = useState<CmaFilters>(DEFAULT_FILTERS);
   const debouncedFilters = useDebounced(filters, 350);
@@ -68,6 +114,8 @@ export default function CmaBuilder() {
   const [selected, setSelected] = useState<Map<string, MlsProperty>>(new Map());
   const [inspecting, setInspecting] = useState<MlsProperty | null>(null);
   const [view, setView] = useState<"list" | "map">("list");
+  // Staged flow: build criteria first (live count only), then reveal results
+  const [revealed, setRevealed] = useState(false);
 
   const { data: rawResults = [], isFetching } = useQuery({
     queryKey: ["mls-search", debouncedFilters.statuses, debouncedFilters.minPrice, debouncedFilters.maxPrice, debouncedFilters.daysBack],
@@ -116,7 +164,7 @@ export default function CmaBuilder() {
         </div>
 
         {/* List / Map toggle */}
-        <div className="flex bg-[#161b22] border border-[#30363d] rounded-lg p-0.5 ml-2">
+        <div className={`flex bg-[#161b22] border border-[#30363d] rounded-lg p-0.5 ml-2 transition-opacity ${revealed ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
           {(["list", "map"] as const).map((v) => (
             <button
               key={v}
@@ -145,7 +193,14 @@ export default function CmaBuilder() {
           loading={isFetching}
         />
         <main className="flex-1 flex flex-col min-w-0">
-          {view === "list" ? (
+          {!revealed ? (
+            <CriteriaStaging
+              count={results.length}
+              loading={isFetching}
+              hasCriteria={filters.statuses.length > 0}
+              onReveal={() => setRevealed(true)}
+            />
+          ) : view === "list" ? (
             <ResultsTable
               properties={results}
               selectedKeys={selectedKeys}

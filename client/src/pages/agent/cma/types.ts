@@ -71,12 +71,13 @@ export interface CmaFilters {
   daysBack: number; // comp window, default 180
 }
 
+// Starts empty: the builder shows 0 matches until the agent picks criteria
 export const DEFAULT_FILTERS: CmaFilters = {
-  statuses: ["Active", "Pending", "Closed"],
+  statuses: [],
   minPrice: null,
   maxPrice: null,
   subAreas: [],
-  propertySubTypes: ["Single Family Residence"],
+  propertySubTypes: [],
   minBeds: null,
   minBaths: null,
   minSqft: null,
