@@ -42,7 +42,7 @@ export default function EvaluationTab({
   if (!report) {
     return (
       <div className="text-center py-16">
-        <p className="text-sm text-[#8b949e]">No evaluation on file yet.</p>
+        <p className="text-sm text-slate-400">No evaluation on file yet.</p>
       </div>
     );
   }
@@ -56,18 +56,18 @@ export default function EvaluationTab({
   return (
     <div className="space-y-5">
       {/* Locked banner */}
-      <div className="flex items-center gap-3 bg-[#161b22] border border-[#30363d] rounded-xl px-4 py-3">
-        <span className="text-lg">🔒</span>
-        <div>
-          <div className="text-xs font-bold text-white">Evaluation locked {evalDate}</div>
-          <div className="text-[10px] text-[#484f58]">
+      <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-2xl px-5 py-4 shadow-sm flex-wrap">
+        <span className="text-xl">🔒</span>
+        <div className="flex-1 min-w-[200px]">
+          <div className="text-sm font-extrabold text-slate-800">Evaluation locked {evalDate}</div>
+          <div className="text-[11px] text-slate-400">
             This snapshot reflects market conditions on the day of your evaluation — it never changes.
           </div>
         </div>
         {showRequestButton && (
           <button
             onClick={onRequestUpdate}
-            className="ml-auto shrink-0 bg-gradient-to-r from-[#388bfd] to-[#58a6ff] text-white text-xs font-bold px-4 py-2 rounded-lg hover:shadow-lg hover:shadow-[#388bfd]/30 transition-all hover:-translate-y-px"
+            className="shrink-0 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm hover:shadow-md hover:-translate-y-px"
           >
             Get an Updated Evaluation
           </button>
@@ -76,13 +76,13 @@ export default function EvaluationTab({
 
       {/* Market warning */}
       {report.marketWarning && (
-        <div className="flex gap-3 bg-gradient-to-br from-[#3d1f00] to-[#2d1500] border border-[#d29922] rounded-xl px-5 py-4">
-          <span className="text-lg">⚠</span>
+        <div className="flex gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4">
+          <span className="text-lg">⚠️</span>
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-widest text-[#f0b429] mb-1">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-amber-700 mb-1">
               Market Conditions at Evaluation
             </div>
-            <p className="text-xs text-[#d4aa4e] leading-relaxed">{report.marketWarning}</p>
+            <p className="text-xs text-amber-800 leading-relaxed">{report.marketWarning}</p>
           </div>
         </div>
       )}
@@ -93,14 +93,16 @@ export default function EvaluationTab({
           <PriceCard
             label={report.priceOptionALabel ?? "Option A"}
             price={report.priceOptionA}
-            accent="#388bfd"
+            cls="border-blue-300 bg-gradient-to-br from-blue-50 to-white"
+            chip="bg-blue-600"
           />
         )}
         {report.priceOptionB && (
           <PriceCard
             label={report.priceOptionBLabel ?? "Option B"}
             price={report.priceOptionB}
-            accent="#f0b429"
+            cls="border-amber-300 bg-gradient-to-br from-amber-50 to-white"
+            chip="bg-amber-500"
           />
         )}
       </div>
@@ -108,36 +110,35 @@ export default function EvaluationTab({
       {/* Stats row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Stat label="Months of Inventory" value={report.monthsOfInventory?.toFixed(1) ?? "—"}
-          color={(report.monthsOfInventory ?? 0) > 6 ? "#f85149" : "#3fb950"} />
-        <Stat label="Active Listings" value={report.activeListingsCount ?? "—"} color="#f0b429" />
-        <Stat label="Avg Sold $/SqFt" value={report.avgSoldPsf ? `$${Math.round(report.avgSoldPsf)}` : "—"} color="#3fb950" />
-        <Stat label="Avg Pending $/SqFt" value={report.avgPendingPsf ? `$${Math.round(report.avgPendingPsf)}` : "—"} color="#58a6ff" />
+          color={(report.monthsOfInventory ?? 0) > 6 ? "text-red-500" : "text-green-600"} />
+        <Stat label="Active Listings" value={report.activeListingsCount ?? "—"} color="text-amber-600" />
+        <Stat label="Avg Sold $/SqFt" value={report.avgSoldPsf ? `$${Math.round(report.avgSoldPsf)}` : "—"} color="text-green-600" />
+        <Stat label="Avg Pending $/SqFt" value={report.avgPendingPsf ? `$${Math.round(report.avgPendingPsf)}` : "—"} color="text-blue-600" />
       </div>
 
       {/* Comps */}
-      {solds.length > 0 && <CompTable title="Comparable Sales" comps={solds} priceKey="soldPrice" badge="SOLD" badgeCls="bg-[#1e3a1e] text-[#3fb950] border-[#3fb950]" />}
-      {pendings.length > 0 && <CompTable title="Pending Sales" comps={pendings} priceKey="listPrice" badge="PENDING" badgeCls="bg-[#1f3a5f] text-[#58a6ff] border-[#388bfd]" />}
+      {solds.length > 0 && <CompTable title="Comparable Sales" comps={solds} priceKey="soldPrice" badge="SOLD" badgeCls="bg-green-100 text-green-700 border-green-200" />}
+      {pendings.length > 0 && <CompTable title="Pending Sales" comps={pendings} priceKey="listPrice" badge="PENDING" badgeCls="bg-blue-100 text-blue-700 border-blue-200" />}
     </div>
   );
 }
 
-function PriceCard({ label, price, accent }: { label: string; price: number; accent: string }) {
+function PriceCard({ label, price, cls, chip }: { label: string; price: number; cls: string; chip: string }) {
   return (
-    <div
-      className="rounded-xl p-6 text-center border-2"
-      style={{ borderColor: accent, background: `linear-gradient(135deg, ${accent}14, #1c2333)` }}
-    >
-      <div className="text-[10px] font-bold uppercase tracking-widest text-[#8b949e] mb-2">{label}</div>
-      <div className="text-3xl font-extrabold text-white tabular-nums">{formatCurrency(price)}</div>
+    <div className={`rounded-2xl p-6 text-center border-2 shadow-sm ${cls}`}>
+      <div className={`inline-block text-[9px] font-bold uppercase tracking-widest text-white px-3 py-1 rounded-full mb-3 ${chip}`}>
+        {label}
+      </div>
+      <div className="text-3xl font-extrabold text-slate-900 tabular-nums">{formatCurrency(price)}</div>
     </div>
   );
 }
 
 function Stat({ label, value, color }: { label: string; value: React.ReactNode; color: string }) {
   return (
-    <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-4">
-      <div className="text-[9px] font-bold uppercase tracking-widest text-[#484f58] mb-1">{label}</div>
-      <div className="text-xl font-extrabold tabular-nums" style={{ color }}>{value}</div>
+    <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+      <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">{label}</div>
+      <div className={`text-xl font-extrabold tabular-nums ${color}`}>{value}</div>
     </div>
   );
 }
@@ -146,11 +147,11 @@ function CompTable({
   title, comps, priceKey, badge, badgeCls,
 }: { title: string; comps: Comp[]; priceKey: "soldPrice" | "listPrice"; badge: string; badgeCls: string }) {
   return (
-    <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-5">
-      <h3 className="text-xs font-bold uppercase tracking-widest text-[#8b949e] mb-3">{title}</h3>
-      <table className="w-full text-xs">
+    <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm overflow-x-auto">
+      <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">{title}</h3>
+      <table className="w-full text-xs min-w-[480px]">
         <thead>
-          <tr className="text-[#484f58]">
+          <tr className="text-slate-400">
             <th className="text-left font-semibold pb-2">Address</th>
             <th className="text-left font-semibold pb-2"></th>
             <th className="text-right font-semibold pb-2">Price</th>
@@ -161,17 +162,17 @@ function CompTable({
         </thead>
         <tbody>
           {comps.map((c) => (
-            <tr key={c.id} className="border-t border-[#21262d]">
-              <td className="py-2 font-semibold text-white">{c.address}</td>
-              <td className="py-2">
-                <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded border ${badgeCls}`}>{badge}</span>
+            <tr key={c.id} className="border-t border-slate-100">
+              <td className="py-2.5 font-bold text-slate-800">{c.address}</td>
+              <td className="py-2.5">
+                <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${badgeCls}`}>{badge}</span>
               </td>
-              <td className="py-2 text-right text-white font-bold tabular-nums">
+              <td className="py-2.5 text-right text-slate-900 font-extrabold tabular-nums">
                 {formatCurrency(c[priceKey])}
               </td>
-              <td className="py-2 text-right text-[#8b949e] tabular-nums">{c.sqft?.toLocaleString() ?? "—"}</td>
-              <td className="py-2 text-right text-[#8b949e] tabular-nums">{c.psf ? `$${Math.round(c.psf)}` : "—"}</td>
-              <td className="py-2 text-right text-[#8b949e] tabular-nums">{c.daysOnMarket ?? "—"}</td>
+              <td className="py-2.5 text-right text-slate-500 tabular-nums">{c.sqft?.toLocaleString() ?? "—"}</td>
+              <td className="py-2.5 text-right text-slate-500 tabular-nums">{c.psf ? `$${Math.round(c.psf)}` : "—"}</td>
+              <td className="py-2.5 text-right text-slate-500 tabular-nums">{c.daysOnMarket ?? "—"}</td>
             </tr>
           ))}
         </tbody>

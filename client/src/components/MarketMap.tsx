@@ -24,23 +24,23 @@ export interface SubjectHome {
 }
 
 const STATUS_COLOR: Record<string, string> = {
-  Active: "#58a6ff",
-  Pending: "#f0b429",
-  Closed: "#3fb950",
+  Active: "#2563eb",
+  Pending: "#d97706",
+  Closed: "#16a34a",
 };
 
 /** Pulsing home icon for the subject property */
 const homeIcon = L.divIcon({
   className: "",
   html: `
-    <div style="position:relative;width:34px;height:34px;">
-      <div style="position:absolute;inset:0;border-radius:50%;background:#f0b429;opacity:.25;animation:homePulse 2s ease-out infinite;"></div>
-      <div style="position:absolute;inset:5px;border-radius:50%;background:#f0b429;border:2.5px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;font-size:12px;">🏠</div>
+    <div style="position:relative;width:36px;height:36px;">
+      <div style="position:absolute;inset:0;border-radius:50%;background:#e11d48;opacity:.25;animation:homePulse 2s ease-out infinite;"></div>
+      <div style="position:absolute;inset:5px;border-radius:50%;background:#e11d48;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;font-size:13px;">🏠</div>
     </div>
     <style>@keyframes homePulse{0%{transform:scale(.8);opacity:.5}100%{transform:scale(2);opacity:0}}</style>
   `,
-  iconSize: [34, 34],
-  iconAnchor: [17, 17],
+  iconSize: [36, 36],
+  iconAnchor: [18, 18],
 });
 
 function FitBounds({ listings, subject }: { listings: MapListing[]; subject?: SubjectHome | null }) {
@@ -73,16 +73,16 @@ export default function MarketMap({
     : [49.1659, -123.9401]; // Nanaimo
 
   return (
-    <div style={{ height }} className="relative rounded-xl overflow-hidden border border-[#30363d]">
+    <div style={{ height }} className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
       <MapContainer
         center={center}
         zoom={13}
-        style={{ height: "100%", width: "100%", background: "#0d1117" }}
+        style={{ height: "100%", width: "100%", background: "#dbeafe" }}
         zoomControl={false}
       >
         <TileLayer
           attribution='&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap'
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         />
         <FitBounds listings={listings} subject={subject} />
 
@@ -93,10 +93,10 @@ export default function MarketMap({
               center={[l.lat, l.lng]}
               radius={8}
               pathOptions={{
-                color: "#0d1117",
-                weight: 1.5,
-                fillColor: STATUS_COLOR[l.status] ?? "#8b949e",
-                fillOpacity: 0.9,
+                color: "#ffffff",
+                weight: 2,
+                fillColor: STATUS_COLOR[l.status] ?? "#64748b",
+                fillOpacity: 0.95,
               }}
               eventHandlers={onSelect ? { click: () => onSelect(l.listingKey) } : undefined}
             >
@@ -135,15 +135,19 @@ export default function MarketMap({
       </MapContainer>
 
       {/* Legend */}
-      <div className="absolute bottom-3 left-3 z-[1000] bg-[#0d1117]/90 backdrop-blur-sm border border-[#30363d] rounded-lg px-3 py-2 flex items-center gap-3">
+      <div className="absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur-sm border border-slate-200 rounded-xl px-3.5 py-2 flex items-center gap-3.5 shadow-md">
         {Object.entries(STATUS_COLOR).map(([status, color]) => (
           <div key={status} className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full" style={{ background: color }} />
-            <span className="text-[10px] font-semibold text-[#8b949e]">
+            <span className="w-2.5 h-2.5 rounded-full ring-2 ring-white" style={{ background: color }} />
+            <span className="text-[11px] font-semibold text-slate-600">
               {status === "Closed" ? "Sold" : status}
             </span>
           </div>
         ))}
+        <div className="flex items-center gap-1.5 pl-1 border-l border-slate-200">
+          <span className="text-xs">🏠</span>
+          <span className="text-[11px] font-semibold text-slate-600">Your home</span>
+        </div>
       </div>
     </div>
   );

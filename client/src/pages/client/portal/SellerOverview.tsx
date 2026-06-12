@@ -16,10 +16,10 @@ interface Showing {
   feedback: Feedback | null;
 }
 
-const PRICE_OPINION: Record<string, { label: string; color: string }> = {
-  too_high: { label: "Priced too high", color: "#f85149" },
-  fair: { label: "Priced fairly", color: "#f0b429" },
-  good_value: { label: "Good value", color: "#3fb950" },
+const PRICE_OPINION: Record<string, { label: string; cls: string }> = {
+  too_high: { label: "Priced too high", cls: "bg-red-50 text-red-600 border-red-200" },
+  fair: { label: "Priced fairly", cls: "bg-amber-50 text-amber-600 border-amber-200" },
+  good_value: { label: "Good value", cls: "bg-green-50 text-green-600 border-green-200" },
 };
 
 export default function SellerOverview({
@@ -43,30 +43,30 @@ export default function SellerOverview({
     <div className="space-y-5">
       {/* Top row: gauge + key numbers */}
       <div className="grid md:grid-cols-[auto_1fr] gap-4">
-        <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-6 flex items-center justify-center">
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 flex items-center justify-center shadow-sm">
           <ProbabilityGauge pct={probabilityPct} />
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <Big label="List Price" value={listPrice ? `$${listPrice.toLocaleString()}` : "—"} color="#fff" />
-          <Big label="Days on Market" value={daysOnMarket} color="#f0b429" />
-          <Big label="Total Showings" value={showings.length} color="#58a6ff" />
+          <Big label="List Price" value={listPrice ? `$${listPrice.toLocaleString()}` : "—"} color="text-slate-900" />
+          <Big label="Days on Market" value={daysOnMarket} color="text-amber-600" />
+          <Big label="Total Showings" value={showings.length} color="text-blue-600" />
           <Big
             label="Buyers Interested"
             value={interested}
-            color="#3fb950"
+            color="text-green-600"
             sub={avgRating ? `${avgRating.toFixed(1)} ★ avg rating` : undefined}
           />
         </div>
       </div>
 
       {/* Showings timeline */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-5">
-        <h3 className="text-xs font-bold uppercase tracking-widest text-[#8b949e] mb-4">
+      <div className="bg-white border border-slate-200 rounded-2xl p-5 md:p-6 shadow-sm">
+        <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-5">
           Showing Activity & Feedback
         </h3>
         <div className="space-y-0">
           {showings.length === 0 && (
-            <p className="text-xs text-[#484f58] py-4">No showings yet — your agent will keep this updated.</p>
+            <p className="text-sm text-slate-400 py-4">No showings yet — your agent will keep this updated.</p>
           )}
           {showings.map((s, i) => {
             const fb = s.feedback;
@@ -75,60 +75,57 @@ export default function SellerOverview({
               <div key={s.id} className="relative flex gap-4 pb-5">
                 {/* Timeline spine */}
                 {i < showings.length - 1 && (
-                  <div className="absolute left-[7px] top-5 bottom-0 w-px bg-[#21262d]" />
+                  <div className="absolute left-[7px] top-5 bottom-0 w-px bg-slate-100" />
                 )}
                 <div
-                  className={`shrink-0 w-[15px] h-[15px] rounded-full border-2 mt-0.5 ${
+                  className={`shrink-0 w-[15px] h-[15px] rounded-full border-[3px] mt-0.5 ${
                     fb?.likelyToOffer
-                      ? "bg-[#1e3a1e] border-[#3fb950]"
-                      : "bg-[#161b22] border-[#30363d]"
+                      ? "bg-green-100 border-green-500"
+                      : "bg-white border-slate-300"
                   }`}
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline justify-between gap-2 flex-wrap">
-                    <div className="text-xs font-bold text-white">
+                    <div className="text-sm font-bold text-slate-800">
                       {s.agentName ?? "Buyer's agent"}
-                      <span className="font-normal text-[#484f58]"> · {s.agentBrokerage}</span>
+                      <span className="font-normal text-slate-400"> · {s.agentBrokerage}</span>
                     </div>
-                    <div className="text-[10px] text-[#484f58] tabular-nums">
+                    <div className="text-[11px] text-slate-400 tabular-nums">
                       {new Date(s.showingDate).toLocaleDateString("en-CA", { month: "short", day: "numeric" })}
                     </div>
                   </div>
                   {fb ? (
-                    <div className="mt-1.5 bg-[#0d1117] border border-[#21262d] rounded-lg p-3">
+                    <div className="mt-2 bg-slate-50 border border-slate-100 rounded-2xl p-3.5">
                       <div className="flex items-center gap-2 flex-wrap">
                         {fb.rating != null && (
-                          <span className="text-[10px] text-[#f0b429]">
-                            {"★".repeat(fb.rating)}{"☆".repeat(5 - fb.rating)}
+                          <span className="text-[11px] text-amber-500">
+                            {"★".repeat(fb.rating)}<span className="text-slate-300">{"★".repeat(5 - fb.rating)}</span>
                           </span>
                         )}
                         {op && (
-                          <span
-                            className="text-[9px] font-bold px-1.5 py-0.5 rounded-md border"
-                            style={{ color: op.color, borderColor: op.color, background: `${op.color}14` }}
-                          >
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${op.cls}`}>
                             {op.label}
                           </span>
                         )}
                         {fb.likelyToOffer && (
-                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-[#1e3a1e] text-[#3fb950] border border-[#3fb950]">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700 border border-green-200">
                             POTENTIAL OFFER
                           </span>
                         )}
                       </div>
                       {fb.likedFeatures && (
-                        <p className="text-[11px] text-[#8b949e] mt-1.5">
-                          <span className="text-[#3fb950]">Liked:</span> {fb.likedFeatures}
+                        <p className="text-xs text-slate-600 mt-2">
+                          <span className="font-bold text-green-600">Liked:</span> {fb.likedFeatures}
                         </p>
                       )}
                       {fb.concerns && (
-                        <p className="text-[11px] text-[#8b949e] mt-0.5">
-                          <span className="text-[#f0b429]">Concerns:</span> {fb.concerns}
+                        <p className="text-xs text-slate-600 mt-1">
+                          <span className="font-bold text-amber-600">Concerns:</span> {fb.concerns}
                         </p>
                       )}
                     </div>
                   ) : (
-                    <p className="text-[10px] text-[#484f58] mt-1">Awaiting feedback…</p>
+                    <p className="text-[11px] text-slate-400 mt-1">Awaiting feedback…</p>
                   )}
                 </div>
               </div>
@@ -142,10 +139,10 @@ export default function SellerOverview({
 
 function Big({ label, value, color, sub }: { label: string; value: React.ReactNode; color: string; sub?: string }) {
   return (
-    <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-4 flex flex-col justify-center">
-      <div className="text-[9px] font-bold uppercase tracking-widest text-[#484f58] mb-1">{label}</div>
-      <div className="text-2xl font-extrabold tabular-nums" style={{ color }}>{value}</div>
-      {sub && <div className="text-[10px] text-[#8b949e] mt-0.5">{sub}</div>}
+    <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-center shadow-sm">
+      <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">{label}</div>
+      <div className={`text-2xl font-extrabold tabular-nums ${color}`}>{value}</div>
+      {sub && <div className="text-[11px] text-slate-500 mt-0.5 font-medium">{sub}</div>}
     </div>
   );
 }

@@ -10,7 +10,7 @@ function DevButton({ label, body }: { label: string; body: object }) {
           body: JSON.stringify(body),
         }).then(() => location.assign("/dashboard"))
       }
-      className="text-[10px] font-semibold py-2 px-2 rounded-lg bg-[#161b22] border border-[#21262d] text-[#484f58] hover:text-[#58a6ff] hover:border-[#388bfd] transition-colors"
+      className="text-[10px] font-semibold py-2 px-2 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-blue-600 hover:border-blue-300 transition-colors shadow-sm"
     >
       {label}
     </button>
@@ -35,31 +35,31 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0d1117] px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-[#f5f7fb] to-indigo-50 px-4">
       <div className="w-full max-w-sm">
         {/* Logo / Brand */}
         <div className="text-center mb-8">
-          <div className="inline-block bg-[#1f3a5f] border border-[#388bfd] text-[#58a6ff] text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider mb-4">
-            CMA Tracker
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-3xl bg-gradient-to-br from-blue-600 to-blue-400 text-white text-2xl shadow-lg shadow-blue-600/20 mb-4">
+            🏠
           </div>
-          <h1 className="text-2xl font-bold text-white">Sign in</h1>
-          <p className="text-[#8b949e] text-sm mt-2">
-            Enter your email and we'll send you a magic link
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Welcome to your Home Portal</h1>
+          <p className="text-slate-500 text-sm mt-2">
+            Enter your email and we'll send you a secure sign-in link
           </p>
         </div>
 
-        <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-6">
+        <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xl shadow-slate-200/50">
           {sent ? (
-            <div className="text-center">
+            <div className="text-center py-2">
               <div className="text-4xl mb-4">✉️</div>
-              <p className="text-white font-semibold mb-2">Check your inbox</p>
-              <p className="text-[#8b949e] text-sm">
-                We sent a sign-in link to <strong className="text-white">{email}</strong>.
+              <p className="text-slate-900 font-bold mb-2">Check your inbox</p>
+              <p className="text-slate-500 text-sm">
+                We sent a sign-in link to <strong className="text-slate-800">{email}</strong>.
                 It expires in 30 minutes.
               </p>
               <button
                 onClick={() => setSent(false)}
-                className="mt-4 text-[#58a6ff] text-sm hover:underline"
+                className="mt-4 text-blue-600 text-sm font-semibold hover:underline"
               >
                 Try a different email
               </button>
@@ -67,7 +67,7 @@ export default function LoginPage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-[#8b949e] uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                   Email address
                 </label>
                 <input
@@ -76,27 +76,27 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2.5 text-white placeholder-[#484f58] text-sm focus:outline-none focus:border-[#388bfd] transition-colors"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100 transition-all"
                 />
               </div>
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#388bfd] hover:bg-[#58a6ff] text-white font-semibold py-2.5 rounded-lg transition-colors text-sm disabled:opacity-60"
+                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all text-sm disabled:opacity-60 shadow-md shadow-blue-600/20 hover:shadow-lg hover:-translate-y-px"
               >
-                {loading ? "Sending…" : "Send Magic Link"}
+                {loading ? "Sending…" : "Email Me a Sign-In Link"}
               </button>
             </form>
           )}
         </div>
 
-        <p className="text-center text-[#484f58] text-xs mt-6">
+        <p className="text-center text-slate-400 text-xs mt-6">
           Gillette &amp; Associates · eXp Realty
         </p>
 
         {import.meta.env.DEV && (
-          <div className="mt-6 border-t border-[#21262d] pt-4">
-            <div className="text-center text-[9px] font-bold uppercase tracking-widest text-[#30363d] mb-2">
+          <div className="mt-6 border-t border-slate-200 pt-4">
+            <div className="text-center text-[9px] font-bold uppercase tracking-widest text-slate-300 mb-2">
               Dev personas (local only)
             </div>
             <div className="grid grid-cols-2 gap-1.5">

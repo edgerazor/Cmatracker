@@ -18,32 +18,34 @@ const CATEGORY_META: Record<string, { label: string; icon: string }> = {
 export default function DocumentsTab({ documents }: { documents: Doc[] }) {
   return (
     <div className="space-y-3">
-      <p className="text-xs text-[#8b949e]">
-        Your important paperwork, all in one place.
-      </p>
+      <p className="text-sm text-slate-500">Your important paperwork, all in one place.</p>
       {documents.map((d) => {
         const meta = CATEGORY_META[d.category] ?? CATEGORY_META.other;
         return (
           <a
             key={d.id}
             href={d.fileUrl}
-            className="flex items-center gap-3 bg-[#161b22] border border-[#30363d] rounded-xl px-4 py-3.5 hover:border-[#388bfd] transition-colors group"
+            className="flex items-center gap-4 bg-white border border-slate-200 rounded-2xl px-5 py-4 hover:border-blue-300 hover:shadow-md transition-all group shadow-sm"
           >
-            <span className="text-lg">{meta.icon}</span>
+            <span className="w-10 h-10 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-lg">
+              {meta.icon}
+            </span>
             <div className="flex-1 min-w-0">
-              <div className="text-xs font-bold text-white group-hover:text-[#58a6ff] transition-colors">
+              <div className="text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
                 {d.title}
               </div>
-              <div className="text-[10px] text-[#484f58]">
+              <div className="text-[11px] text-slate-400">
                 {meta.label} · {d.fileName}
               </div>
             </div>
-            <span className="text-[#484f58] group-hover:text-[#58a6ff] transition-colors text-sm">↓</span>
+            <span className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors text-sm">
+              ↓
+            </span>
           </a>
         );
       })}
       {documents.length === 0 && (
-        <div className="text-center py-12 text-xs text-[#484f58]">No documents yet.</div>
+        <div className="text-center py-12 text-sm text-slate-400">No documents yet.</div>
       )}
     </div>
   );

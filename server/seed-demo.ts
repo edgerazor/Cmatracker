@@ -258,33 +258,42 @@ async function main() {
   console.log("Prospect seeded:", prospectProp.address);
 
   // ── 3. BUYER — David & Emma Chen, recently purchased ────────────────────────
+  // Use a REAL sold Departure Bay listing so coords + photos are genuine
+  const solds = await mls({ city: "Nanaimo", status: "Closed", limit: "500" });
+  const purchase = solds.find(
+    (p) => p.subArea === "Na Departure Bay" && p.latitude && p.mainPhotoUrl &&
+           p.propertySubType === "Single Family Residence"
+  );
+  if (!purchase) throw new Error("No sold Departure Bay listing found");
+  console.log("Buyer purchase (real sold listing):", purchase.address);
+
   const [chen] = await db.insert(clients).values({
     agentId: derek.id,
     firstName: "David",
     lastName: "Chen",
     email: "chens@example.com",
     phone: "250-555-0123",
-    notes: "Demo buyer persona — purchased Feb 2026",
+    notes: "Demo buyer persona — real sold listing data",
   }).returning();
 
   const [buyerProp] = await db.insert(properties).values({
     clientId: chen.id,
     agentId: derek.id,
-    address: "3719 Departure Bay Rd",
+    address: purchase.address?.split(",")[0] ?? "3120 Robin Hood Dr",
     city: "Nanaimo",
-    latitude: 49.2052,
-    longitude: -123.9608,
+    latitude: Number(purchase.latitude),
+    longitude: Number(purchase.longitude),
     subArea: "Na Departure Bay",
     propertyType: "Single Family",
-    yearBuilt: 1976,
-    bedrooms: 3,
-    bathroomsFull: 2,
-    sqft: 1880,
-    lotSizeAcres: 0.18,
-    description: "Walk to the beach — the Chens' first family home.",
+    yearBuilt: purchase.yearBuilt,
+    bedrooms: purchase.bedrooms,
+    bathroomsFull: Math.floor(purchase.bathrooms ?? 2),
+    sqft: Math.round(Number(purchase.squareFeet) || 1900),
+    description: "The Chens' family home in Departure Bay.",
+    photoUrl: purchase.mainPhotoUrl,
     status: "purchased",
-    soldPrice: 815_000,
-    soldDate: new Date("2026-02-27"),
+    soldPrice: Number(purchase.closePrice),
+    soldDate: purchase.closeDate ? new Date(purchase.closeDate) : new Date("2026-02-27"),
     marketConfig: {
       subAreas: ["Na Departure Bay"],
       daysBack: 60,

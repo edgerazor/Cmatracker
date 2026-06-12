@@ -15,11 +15,11 @@ export interface PropertyBundle {
   documents: any[];
 }
 
-const STATUS_META: Record<string, { label: string; color: string; bg: string }> = {
-  cma: { label: "EVALUATED", color: "#a371f7", bg: "#2d1b4e" },
-  active: { label: "LISTED · ACTIVE", color: "#58a6ff", bg: "#1f3a5f" },
-  sold: { label: "SOLD", color: "#3fb950", bg: "#1e3a1e" },
-  purchased: { label: "YOUR HOME", color: "#f0b429", bg: "#3d2e00" },
+const STATUS_META: Record<string, { label: string; cls: string }> = {
+  cma: { label: "EVALUATED", cls: "bg-violet-100 text-violet-700 border-violet-200" },
+  active: { label: "LISTED · ACTIVE", cls: "bg-blue-100 text-blue-700 border-blue-200" },
+  sold: { label: "SOLD", cls: "bg-green-100 text-green-700 border-green-200" },
+  purchased: { label: "YOUR HOME", cls: "bg-amber-100 text-amber-700 border-amber-200" },
 };
 
 export default function PropertyPortal({ bundle }: { bundle: PropertyBundle }) {
@@ -27,7 +27,6 @@ export default function PropertyPortal({ bundle }: { bundle: PropertyBundle }) {
   const status = p.status as string;
   const meta = STATUS_META[status] ?? STATUS_META.cma;
 
-  // Tab sets per lifecycle state
   const tabs: { id: string; label: string }[] =
     status === "active"
       ? [
@@ -71,29 +70,26 @@ export default function PropertyPortal({ bundle }: { bundle: PropertyBundle }) {
   return (
     <div>
       {/* Hero */}
-      <div className="relative rounded-2xl overflow-hidden border border-[#30363d] mb-6">
-        <div className="relative h-56 md:h-72 bg-[#161b22]">
+      <div className="relative rounded-3xl overflow-hidden border border-slate-200 shadow-md mb-6 bg-white">
+        <div className="relative h-60 md:h-80 bg-slate-100">
           {p.photoUrl ? (
             <img src={p.photoUrl} alt="" className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-[#161b22] to-[#1c2333] flex items-center justify-center text-6xl opacity-30">
+            <div className="w-full h-full bg-gradient-to-br from-blue-50 to-slate-100 flex items-center justify-center text-6xl opacity-40">
               🏠
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0d1117] via-[#0d1117]/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
         </div>
-        <div className="absolute bottom-0 inset-x-0 p-5 md:p-6 flex items-end justify-between gap-4 flex-wrap">
+        <div className="absolute bottom-0 inset-x-0 p-5 md:p-7 flex items-end justify-between gap-4 flex-wrap">
           <div>
-            <span
-              className="inline-block text-[9px] font-bold px-2.5 py-1 rounded-full border mb-2 tracking-widest"
-              style={{ color: meta.color, borderColor: meta.color, background: meta.bg }}
-            >
+            <span className={`inline-block text-[10px] font-bold px-3 py-1 rounded-full border mb-2 tracking-widest bg-white/90 backdrop-blur-sm ${meta.cls}`}>
               {meta.label}
             </span>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-white leading-tight">
+            <h1 className="text-2xl md:text-4xl font-extrabold text-white leading-tight drop-shadow-sm">
               {p.address}
             </h1>
-            <p className="text-xs text-[#8b949e] mt-1">
+            <p className="text-xs md:text-sm text-white/80 mt-1.5 font-medium">
               {p.subArea?.replace(/^Na /, "")} · {p.bedrooms} bed · {p.bathroomsFull} bath ·{" "}
               {p.sqft?.toLocaleString()} sqft
               {p.yearBuilt ? ` · Built ${p.yearBuilt}` : ""}
@@ -101,17 +97,17 @@ export default function PropertyPortal({ bundle }: { bundle: PropertyBundle }) {
             </p>
           </div>
           {status === "active" && p.listPrice && (
-            <div className="text-right">
-              <div className="text-[9px] font-bold uppercase tracking-widest text-[#8b949e]">Listed at</div>
-              <div className="text-2xl md:text-3xl font-extrabold text-white tabular-nums">
+            <div className="text-right bg-white/90 backdrop-blur-sm rounded-2xl px-5 py-3 shadow-md">
+              <div className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Listed at</div>
+              <div className="text-xl md:text-2xl font-extrabold text-slate-900 tabular-nums">
                 ${p.listPrice.toLocaleString()}
               </div>
             </div>
           )}
           {status === "purchased" && p.soldDate && (
-            <div className="text-right">
-              <div className="text-[9px] font-bold uppercase tracking-widest text-[#8b949e]">Home since</div>
-              <div className="text-lg font-extrabold text-white">
+            <div className="text-right bg-white/90 backdrop-blur-sm rounded-2xl px-5 py-3 shadow-md">
+              <div className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Home since</div>
+              <div className="text-base md:text-lg font-extrabold text-slate-900">
                 {new Date(p.soldDate).toLocaleDateString("en-CA", { month: "long", year: "numeric" })}
               </div>
             </div>
@@ -120,19 +116,18 @@ export default function PropertyPortal({ bundle }: { bundle: PropertyBundle }) {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 border-b border-[#21262d]">
+      <div className="flex gap-1 mb-6 bg-white border border-slate-200 rounded-2xl p-1.5 shadow-sm w-fit max-w-full overflow-x-auto">
         {tabs.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`relative px-4 py-2.5 text-xs font-bold transition-colors ${
-              tab === t.id ? "text-white" : "text-[#484f58] hover:text-[#8b949e]"
+            className={`shrink-0 px-4 py-2 text-xs font-bold rounded-xl transition-all ${
+              tab === t.id
+                ? "bg-blue-600 text-white shadow-sm"
+                : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
             }`}
           >
             {t.label}
-            {tab === t.id && (
-              <span className="absolute bottom-0 inset-x-2 h-0.5 bg-gradient-to-r from-[#388bfd] to-[#58a6ff] rounded-full" />
-            )}
           </button>
         ))}
       </div>
@@ -150,7 +145,7 @@ export default function PropertyPortal({ bundle }: { bundle: PropertyBundle }) {
       {tab === "evaluation" && (
         <>
           {evalRequested && (
-            <div className="mb-4 bg-[#1e3a1e] border border-[#3fb950] rounded-xl px-4 py-3 text-xs text-[#3fb950] font-semibold">
+            <div className="mb-4 bg-green-50 border border-green-200 rounded-2xl px-4 py-3 text-xs text-green-700 font-semibold">
               ✓ Request sent — your agent will be in touch shortly to arrange your updated evaluation.
             </div>
           )}

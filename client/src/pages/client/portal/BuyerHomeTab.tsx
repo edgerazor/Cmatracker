@@ -25,7 +25,7 @@ export default function BuyerHomeTab({ components }: { components: Component[] }
 
   return (
     <div className="space-y-5">
-      <p className="text-xs text-[#8b949e]">
+      <p className="text-sm text-slate-500">
         Your home's key systems, tracked from your inspection report. We'll flag anything
         approaching end-of-life so there are no surprises.
       </p>
@@ -38,12 +38,11 @@ export default function BuyerHomeTab({ components }: { components: Component[] }
           const remaining = age != null && life ? life - age : null;
 
           const barColor =
-            usedPct == null ? "#484f58"
-            : usedPct >= 85 ? "#f85149"
-            : usedPct >= 65 ? "#f0b429"
-            : "#3fb950";
+            usedPct == null ? "#94a3b8"
+            : usedPct >= 85 ? "#dc2626"
+            : usedPct >= 65 ? "#d97706"
+            : "#16a34a";
 
-          // Service due?
           let serviceDue = false;
           if (c.lastServicedAt && c.serviceIntervalMonths) {
             const next = new Date(c.lastServicedAt);
@@ -52,20 +51,20 @@ export default function BuyerHomeTab({ components }: { components: Component[] }
           }
 
           return (
-            <div key={c.id} className="bg-[#161b22] border border-[#30363d] rounded-xl p-5 hover:border-[#484f58] transition-colors">
+            <div key={c.id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-lg bg-[#0d1117] border border-[#21262d] flex items-center justify-center text-base">
+                <div className="w-10 h-10 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-lg">
                   {TYPE_ICON[c.componentType] ?? "🔧"}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-bold text-white">{c.label}</div>
-                  <div className="text-[10px] text-[#484f58] mt-0.5">
+                  <div className="text-sm font-extrabold text-slate-800">{c.label}</div>
+                  <div className="text-[11px] text-slate-400 mt-0.5">
                     {c.installedYear ? `Installed ${c.installedYear}` : "Install year unknown"}
                     {age != null && ` · ${age} yrs old`}
                   </div>
                 </div>
                 {serviceDue && (
-                  <span className="shrink-0 text-[9px] font-bold px-2 py-1 rounded-md bg-[#3d2e00] text-[#f0b429] border border-[#d29922]">
+                  <span className="shrink-0 text-[10px] font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200">
                     SERVICE DUE
                   </span>
                 )}
@@ -73,15 +72,15 @@ export default function BuyerHomeTab({ components }: { components: Component[] }
 
               {usedPct != null && (
                 <div className="mt-4">
-                  <div className="flex justify-between text-[10px] mb-1.5">
-                    <span className="text-[#484f58] font-semibold">Lifespan used</span>
+                  <div className="flex justify-between text-[11px] mb-1.5">
+                    <span className="text-slate-400 font-semibold">Lifespan used</span>
                     <span className="font-bold tabular-nums" style={{ color: barColor }}>
                       {remaining != null && remaining > 0
                         ? `~${remaining} yrs remaining`
                         : "At expected end-of-life"}
                     </span>
                   </div>
-                  <div className="h-2 bg-[#0d1117] rounded-full overflow-hidden">
+                  <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
                     <div
                       className="h-full rounded-full transition-all duration-1000 ease-out"
                       style={{ width: `${usedPct}%`, background: barColor }}
@@ -91,7 +90,9 @@ export default function BuyerHomeTab({ components }: { components: Component[] }
               )}
 
               {c.notes && (
-                <p className="text-[10px] text-[#8b949e] mt-3 leading-relaxed">{c.notes}</p>
+                <p className="text-[11px] text-slate-500 mt-3 leading-relaxed bg-slate-50 rounded-xl px-3 py-2">
+                  {c.notes}
+                </p>
               )}
             </div>
           );
@@ -99,7 +100,7 @@ export default function BuyerHomeTab({ components }: { components: Component[] }
       </div>
 
       {components.length === 0 && (
-        <div className="text-center py-12 text-xs text-[#484f58]">
+        <div className="text-center py-12 text-sm text-slate-400">
           No components tracked yet — your agent can add them from your inspection report.
         </div>
       )}

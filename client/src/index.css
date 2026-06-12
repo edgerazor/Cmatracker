@@ -13,15 +13,19 @@
 }
 
 body {
-  background: #0d1117;
-  color: #e6edf3;
+  background: #f5f7fb;
+  color: #0f172a;
   font-family: 'Inter', sans-serif;
   min-height: 100vh;
   margin: 0;
 }
 
 /* Scrollbar styling */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #0d1117; }
-::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #484f58; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* Dark scrollbars inside the realtor workspace */
+.theme-dark ::-webkit-scrollbar-thumb { background: #30363d; }
+.theme-dark ::-webkit-scrollbar-thumb:hover { background: #484f58; }
