@@ -8,6 +8,7 @@ import PropertyDetail from "./PropertyDetail";
 import MarketMap from "../../../components/MarketMap";
 import {
   MlsProperty, CmaFilters, DEFAULT_FILTERS, computeLiveStats, num, effectivePrice,
+  inWindow, windowDays,
 } from "./types";
 
 /** Debounce filters so we don't refetch on every keystroke */
@@ -21,14 +22,22 @@ function useDebounced<T>(value: T, ms: number): T {
 }
 
 async function fetchMls(filters: CmaFilters): Promise<MlsProperty[]> {
-  const since = new Date(Date.now() - filters.daysBack * 86400_000).toISOString().slice(0, 10);
-
   // One request per status (API filters one status at a time), merged client-side
   const requests = filters.statuses.map(async (status) => {
     const params = new URLSearchParams({ city: "Nanaimo", status, limit: "500" });
     if (filters.minPrice) params.set("minPrice", String(filters.minPrice));
     if (filters.maxPrice) params.set("maxPrice", String(filters.maxPrice));
-    if (status === "Closed") params.set("startDate", since);
+    // Server-side date narrowing for solds (fine-grained filtering happens client-side)
+    if (status === "Closed") {
+      const w = filters.statusWindows[status];
+      const start =
+        w?.from ??
+        (w?.daysBack != null
+          ? new Date(Date.now() - w.daysBack * 86400_000).toISOString().slice(0, 10)
+          : null);
+      if (start) params.set("startDate", start);
+      if (w?.to) params.set("endDate", w.to);
+    }
     const res = await fetch(`/api/mls/properties?${params}`);
     if (!res.ok) throw new Error(`MLS API error ${res.status}`);
     const json = await res.json();
@@ -43,6 +52,7 @@ async function fetchMls(filters: CmaFilters): Promise<MlsProperty[]> {
 /** Filters the API can't do server-side, applied locally */
 function applyLocalFilters(props: MlsProperty[], f: CmaFilters): MlsProperty[] {
   return props.filter((p) => {
+    if (!inWindow(p, f.statusWindows[p.status])) return false;
     if (f.subAreas.length && !f.subAreas.includes(p.subArea ?? "")) return false;
     if (f.propertySubTypes.length && !f.propertySubTypes.includes(p.propertySubType ?? "")) return false;
     if (f.minBeds != null && (p.bedrooms ?? 0) < f.minBeds) return false;
@@ -118,7 +128,13 @@ export default function CmaBuilder() {
   const [revealed, setRevealed] = useState(false);
 
   const { data: rawResults = [], isFetching } = useQuery({
-    queryKey: ["mls-search", debouncedFilters.statuses, debouncedFilters.minPrice, debouncedFilters.maxPrice, debouncedFilters.daysBack],
+    queryKey: [
+      "mls-search",
+      debouncedFilters.statuses,
+      debouncedFilters.minPrice,
+      debouncedFilters.maxPrice,
+      debouncedFilters.statusWindows,
+    ],
     queryFn: () => fetchMls(debouncedFilters),
     staleTime: 60_000,
   });
@@ -133,9 +149,10 @@ export default function CmaBuilder() {
 
   const stats = useMemo(() => {
     const totalActive = results.filter((p) => p.status === "Active").length;
-    return computeLiveStats(selectedList, totalActive, filters.daysBack);
+    // MOI window = the sold comp window (how long the sales sample spans)
+    return computeLiveStats(selectedList, totalActive, windowDays(filters.statusWindows.Closed));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected, results, filters.daysBack]);
+  }, [selected, results, filters.statusWindows]);
 
   const toggle = (p: MlsProperty) => {
     setSelected((prev) => {

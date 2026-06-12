@@ -54,6 +54,15 @@ export const psf = (p: MlsProperty): number | null => {
   return price / sqft;
 };
 
+/** Per-status date window: either a rolling "last N days" preset or custom calendar dates */
+export interface StatusWindow {
+  daysBack: number | null;    // e.g. 60 = last 60 days; null = no rolling window
+  from: string | null;        // custom range start (YYYY-MM-DD), overrides daysBack
+  to: string | null;          // custom range end
+}
+
+export const ALL_TIME: StatusWindow = { daysBack: null, from: null, to: null };
+
 export interface CmaFilters {
   statuses: string[];
   minPrice: number | null;
@@ -68,10 +77,12 @@ export interface CmaFilters {
   maxYearBuilt: number | null;
   layouts: string[];
   waterfront: boolean | null;
-  daysBack: number; // comp window, default 180
+  // Per-status date ranges, like Matrix (Active/Pending = list date, Sold = sale date)
+  statusWindows: Record<string, StatusWindow>;
 }
 
-// Starts empty: the builder shows 0 matches until the agent picks criteria
+// Starts empty: the builder shows 0 matches until the agent picks criteria.
+// Sold defaults to last 180 days (Matrix convention); Active/Pending unrestricted.
 export const DEFAULT_FILTERS: CmaFilters = {
   statuses: [],
   minPrice: null,
@@ -86,8 +97,46 @@ export const DEFAULT_FILTERS: CmaFilters = {
   maxYearBuilt: null,
   layouts: [],
   waterfront: null,
-  daysBack: 180,
+  statusWindows: {
+    Active: { ...ALL_TIME },
+    Pending: { ...ALL_TIME },
+    Closed: { daysBack: 180, from: null, to: null },
+  },
 };
+
+/** Effective window length in days (for MOI math). Defaults to 180. */
+export function windowDays(w: StatusWindow | undefined): number {
+  if (!w) return 180;
+  if (w.from && w.to) {
+    const d = (new Date(w.to).getTime() - new Date(w.from).getTime()) / 86400_000;
+    return d > 0 ? d : 180;
+  }
+  return w.daysBack ?? 180;
+}
+
+/** Does a property fall inside its status window? */
+export function inWindow(p: MlsProperty, w: StatusWindow | undefined): boolean {
+  if (!w || (w.daysBack == null && !w.from && !w.to)) return true;
+  // Sold uses the sale date; Active/Pending use the list date
+  const dateStr = p.status === "Closed" ? p.closeDate ?? p.listDate : p.listDate;
+  if (w.from || w.to) {
+    if (!dateStr) return true; // don't drop records missing dates on custom ranges
+    const t = new Date(dateStr).getTime();
+    if (w.from && t < new Date(w.from).getTime()) return false;
+    if (w.to && t > new Date(w.to).getTime() + 86400_000) return false;
+    return true;
+  }
+  if (w.daysBack != null) {
+    if (dateStr) {
+      return new Date(dateStr).getTime() >= Date.now() - w.daysBack * 86400_000;
+    }
+    // Fall back to days-on-market for actives/pendings missing a list date
+    if (p.status !== "Closed" && p.daysOnMarket != null) {
+      return p.daysOnMarket <= w.daysBack;
+    }
+  }
+  return true;
+}
 
 export const NANAIMO_SUB_AREAS = [
   "Na Brechin Hill", "Na Cedar", "Na Central Nanaimo", "Na Chase River",

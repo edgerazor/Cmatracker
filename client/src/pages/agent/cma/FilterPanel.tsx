@@ -1,4 +1,5 @@
-import { CmaFilters, NANAIMO_SUB_AREAS, PROPERTY_SUB_TYPES, LAYOUTS } from "./types";
+import { useState } from "react";
+import { CmaFilters, StatusWindow, ALL_TIME, NANAIMO_SUB_AREAS, PROPERTY_SUB_TYPES, LAYOUTS } from "./types";
 
 const STATUS_META: Record<string, { label: string; color: string; bg: string }> = {
   Active: { label: "Active", color: "#58a6ff", bg: "#1f3a5f" },
@@ -184,26 +185,105 @@ export default function FilterPanel({ filters, onChange, resultCount, loading }:
           </div>
         </Section>
 
-        {/* Comp window */}
-        <Section label="Comp window">
-          <div className="flex gap-2">
-            {[90, 180, 365].map((d) => (
-              <button
-                key={d}
-                onClick={() => set("daysBack", d)}
-                className={`flex-1 text-xs font-semibold py-2 rounded-lg border transition-all ${
-                  filters.daysBack === d
-                    ? "bg-[#1f3a5f] border-[#388bfd] text-[#58a6ff]"
-                    : "border-[#30363d] text-[#484f58] hover:text-[#8b949e]"
-                }`}
-              >
-                {d === 365 ? "1 yr" : `${d} days`}
-              </button>
-            ))}
-          </div>
-        </Section>
+        {/* Per-status date ranges (like Matrix: Sold 0-180, etc.) */}
+        {filters.statuses.length > 0 && (
+          <Section label="Date range">
+            <div className="space-y-3">
+              {filters.statuses.map((status) => (
+                <StatusWindowControl
+                  key={status}
+                  status={status}
+                  window={filters.statusWindows[status] ?? ALL_TIME}
+                  onChange={(w) =>
+                    set("statusWindows", { ...filters.statusWindows, [status]: w })
+                  }
+                />
+              ))}
+            </div>
+          </Section>
+        )}
       </div>
     </aside>
+  );
+}
+
+const WINDOW_PRESETS = [
+  { label: "30d", days: 30 },
+  { label: "60d", days: 60 },
+  { label: "90d", days: 90 },
+  { label: "180d", days: 180 },
+  { label: "1 yr", days: 365 },
+  { label: "All", days: null },
+] as const;
+
+/** One status row: preset chips (last N days) or a custom calendar range */
+function StatusWindowControl({
+  status, window: w, onChange,
+}: { status: string; window: StatusWindow; onChange: (w: StatusWindow) => void }) {
+  const customActive = w.from != null || w.to != null;
+  const [showCustom, setShowCustom] = useState(customActive);
+  const meta = STATUS_META[status];
+  const dateLabel = status === "Closed" ? "sale date" : "list date";
+
+  return (
+    <div className="bg-[#161b22] border border-[#21262d] rounded-lg p-2.5">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-bold" style={{ color: meta?.color ?? "#8b949e" }}>
+          {meta?.label ?? status}
+          <span className="text-[#484f58] font-medium ml-1.5">by {dateLabel}</span>
+        </span>
+        <button
+          onClick={() => {
+            const next = !showCustom;
+            setShowCustom(next);
+            if (!next) onChange({ daysBack: w.daysBack, from: null, to: null });
+          }}
+          className={`text-[9px] font-bold px-1.5 py-0.5 rounded transition-colors ${
+            showCustom ? "bg-[#1f3a5f] text-[#58a6ff]" : "text-[#484f58] hover:text-[#8b949e]"
+          }`}
+          title="Pick exact calendar dates"
+        >
+          📅 Custom
+        </button>
+      </div>
+
+      {!showCustom ? (
+        <div className="flex gap-1">
+          {WINDOW_PRESETS.map((p) => {
+            const on = !customActive && w.daysBack === p.days;
+            return (
+              <button
+                key={p.label}
+                onClick={() => onChange({ daysBack: p.days, from: null, to: null })}
+                className={`flex-1 text-[10px] font-bold py-1.5 rounded-md border transition-all ${
+                  on
+                    ? "bg-[#1f3a5f] border-[#388bfd] text-[#58a6ff]"
+                    : "border-transparent text-[#484f58] hover:text-[#8b949e] hover:border-[#30363d]"
+                }`}
+              >
+                {p.label}
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="flex items-center gap-2">
+          <input
+            type="date"
+            value={w.from ?? ""}
+            onChange={(e) => onChange({ daysBack: null, from: e.target.value || null, to: w.to })}
+            className="flex-1 bg-[#0d1117] border border-[#30363d] rounded-lg px-2 py-1.5 text-[11px] text-white focus:outline-none focus:border-[#388bfd] [color-scheme:dark]"
+          />
+          <span className="text-[#484f58] text-xs">–</span>
+          <input
+            type="date"
+            value={w.to ?? ""}
+            onChange={(e) => onChange({ daysBack: null, from: w.from, to: e.target.value || null })}
+            className="flex-1 bg-[#0d1117] border border-[#30363d] rounded-lg px-2 py-1.5 text-[11px] text-white focus:outline-none focus:border-[#388bfd] [color-scheme:dark]"
+          />
+        </div>
+      )}
+    </div>
   );
 }
 
