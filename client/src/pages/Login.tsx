@@ -1,5 +1,22 @@
 import { useState } from "react";
 
+function DevButton({ label, body }: { label: string; body: object }) {
+  return (
+    <button
+      onClick={() =>
+        fetch("/api/auth/dev-login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }).then(() => location.assign("/dashboard"))
+      }
+      className="text-[10px] font-semibold py-2 px-2 rounded-lg bg-[#161b22] border border-[#21262d] text-[#484f58] hover:text-[#58a6ff] hover:border-[#388bfd] transition-colors"
+    >
+      {label}
+    </button>
+  );
+}
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
@@ -78,14 +95,17 @@ export default function LoginPage() {
         </p>
 
         {import.meta.env.DEV && (
-          <button
-            onClick={() =>
-              fetch("/api/auth/dev-login", { method: "POST" }).then(() => location.assign("/dashboard"))
-            }
-            className="block mx-auto mt-4 text-xs text-[#484f58] hover:text-[#58a6ff] transition-colors"
-          >
-            ⚡ Dev sign-in (local only)
-          </button>
+          <div className="mt-6 border-t border-[#21262d] pt-4">
+            <div className="text-center text-[9px] font-bold uppercase tracking-widest text-[#30363d] mb-2">
+              Dev personas (local only)
+            </div>
+            <div className="grid grid-cols-2 gap-1.5">
+              <DevButton label="⚡ Agent · Derek" body={{}} />
+              <DevButton label="🏷️ Seller · Carters" body={{ clientEmail: "carters@example.com" }} />
+              <DevButton label="📋 Prospect · Susan" body={{ clientEmail: "susan.m@example.com" }} />
+              <DevButton label="🔑 Buyer · Chens" body={{ clientEmail: "chens@example.com" }} />
+            </div>
+          </div>
         )}
       </div>
     </div>

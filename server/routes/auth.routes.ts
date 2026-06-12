@@ -46,11 +46,22 @@ router.get("/verify", async (req, res) => {
   return res.redirect(`${process.env.APP_URL}/dashboard`);
 });
 
-// POST /api/auth/dev-login — development only: seeds + signs in as the first agent
+// POST /api/auth/dev-login — development only.
+// Body: {} → agent · { clientEmail } → sign in as that client persona
 router.post("/dev-login", async (req, res) => {
   if (process.env.NODE_ENV === "production") {
     return res.status(404).json({ error: "Not found" });
   }
+
+  const clientEmail = req.body?.clientEmail as string | undefined;
+  if (clientEmail) {
+    const [client] = await db.select().from(clients).where(eq(clients.email, clientEmail)).limit(1);
+    if (!client) return res.status(404).json({ error: `No client with email ${clientEmail}` });
+    req.session.agentId = undefined;
+    req.session.clientId = client.id;
+    return res.json({ ok: true, client: { id: client.id, name: `${client.firstName} ${client.lastName}` } });
+  }
+
   let [agent] = await db.select().from(agents).limit(1);
   if (!agent) {
     [agent] = await db
@@ -65,6 +76,7 @@ router.post("/dev-login", async (req, res) => {
       })
       .returning();
   }
+  req.session.clientId = undefined;
   req.session.agentId = agent.id;
   res.json({ ok: true, agent: { id: agent.id, name: agent.name } });
 });

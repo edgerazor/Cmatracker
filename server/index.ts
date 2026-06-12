@@ -11,10 +11,12 @@ import clientRoutes from "./routes/clients.routes.js";
 import propertyRoutes from "./routes/properties.routes.js";
 import mlsRoutes from "./routes/mls.routes.js";
 import showingRoutes from "./routes/showings.routes.js";
+import portalRoutes from "./routes/portal.routes.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
-const PORT = Number(process.env.PORT) || 3001;
+// API_PORT, not PORT — dev tooling injects PORT for the Vite front-end
+const PORT = Number(process.env.API_PORT) || 3001;
 
 // Session store
 const PgSession = connectPgSimple(session);
@@ -48,6 +50,7 @@ app.use("/api/clients", clientRoutes);
 app.use("/api/properties", propertyRoutes);
 app.use("/api/mls", mlsRoutes);
 app.use("/api/showings", showingRoutes);
+app.use("/api/portal", portalRoutes);
 
 // Serve React in production
 if (process.env.NODE_ENV === "production") {

@@ -5,8 +5,9 @@ import FilterPanel from "./FilterPanel";
 import ResultsTable from "./ResultsTable";
 import SelectionTray from "./SelectionTray";
 import PropertyDetail from "./PropertyDetail";
+import MarketMap from "../../../components/MarketMap";
 import {
-  MlsProperty, CmaFilters, DEFAULT_FILTERS, computeLiveStats, num,
+  MlsProperty, CmaFilters, DEFAULT_FILTERS, computeLiveStats, num, effectivePrice,
 } from "./types";
 
 /** Debounce filters so we don't refetch on every keystroke */
@@ -66,6 +67,7 @@ export default function CmaBuilder() {
 
   const [selected, setSelected] = useState<Map<string, MlsProperty>>(new Map());
   const [inspecting, setInspecting] = useState<MlsProperty | null>(null);
+  const [view, setView] = useState<"list" | "map">("list");
 
   const { data: rawResults = [], isFetching } = useQuery({
     queryKey: ["mls-search", debouncedFilters.statuses, debouncedFilters.minPrice, debouncedFilters.maxPrice, debouncedFilters.daysBack],
@@ -112,6 +114,22 @@ export default function CmaBuilder() {
         <div className="text-sm text-[#8b949e]">
           Select comparables → watch the CMA assemble live
         </div>
+
+        {/* List / Map toggle */}
+        <div className="flex bg-[#161b22] border border-[#30363d] rounded-lg p-0.5 ml-2">
+          {(["list", "map"] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              className={`text-[11px] font-bold px-3.5 py-1.5 rounded-md transition-all ${
+                view === v ? "bg-[#1f3a5f] text-[#58a6ff]" : "text-[#484f58] hover:text-[#8b949e]"
+              }`}
+            >
+              {v === "list" ? "☰ List" : "◉ Map"}
+            </button>
+          ))}
+        </div>
+
         <div className="flex-1" />
         <span className="text-[10px] text-[#484f58] uppercase tracking-widest font-semibold">
           {selected.size} selected
@@ -127,13 +145,40 @@ export default function CmaBuilder() {
           loading={isFetching}
         />
         <main className="flex-1 flex flex-col min-w-0">
-          <ResultsTable
-            properties={results}
-            selectedKeys={selectedKeys}
-            onToggle={toggle}
-            onInspect={setInspecting}
-            loading={isFetching && !rawResults.length}
-          />
+          {view === "list" ? (
+            <ResultsTable
+              properties={results}
+              selectedKeys={selectedKeys}
+              onToggle={toggle}
+              onInspect={setInspecting}
+              loading={isFetching && !rawResults.length}
+            />
+          ) : (
+            <div className="flex-1 p-3">
+              <MarketMap
+                height="100%"
+                listings={results
+                  .filter((p) => p.latitude && p.longitude)
+                  .map((p) => ({
+                    listingKey: p.listingKey,
+                    address: p.address,
+                    status: p.status,
+                    price: effectivePrice(p),
+                    sqft: p.squareFeet,
+                    beds: p.bedrooms,
+                    baths: p.bathrooms,
+                    dom: p.daysOnMarket,
+                    lat: num(p.latitude as any),
+                    lng: num(p.longitude as any),
+                    photo: p.mainPhotoUrl,
+                  }))}
+                onSelect={(key) => {
+                  const prop = results.find((r) => r.listingKey === key);
+                  if (prop) setInspecting(prop);
+                }}
+              />
+            </div>
+          )}
         </main>
       </div>
 

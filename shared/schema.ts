@@ -80,6 +80,9 @@ export const properties = pgTable("properties", {
   soldDate: timestamp("sold_date"),
   // Map boundary for pulling comps (GeoJSON)
   compBoundary: jsonb("comp_boundary"),
+  // Per-client market lens: what this client's live tracker shows
+  // { subAreas: string[], daysBack: number, minPrice?: number, maxPrice?: number, propertySubTypes?: string[] }
+  marketConfig: jsonb("market_config"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
