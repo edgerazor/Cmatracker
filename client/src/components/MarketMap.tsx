@@ -62,12 +62,16 @@ export default function MarketMap({
   subject,
   height = "100%",
   onSelect,
+  selectedKeys,
 }: {
   listings: MapListing[];
   subject?: SubjectHome | null;
   height?: string;
   onSelect?: (listingKey: string) => void;
+  /** When provided, these listings render as visibly "selected" (halo + larger pin) */
+  selectedKeys?: Set<string>;
 }) {
+  const hasSelection = (selectedKeys?.size ?? 0) > 0;
   const center: [number, number] = subject
     ? [subject.lat, subject.lng]
     : [49.1659, -123.9401]; // Nanaimo
@@ -86,17 +90,40 @@ export default function MarketMap({
         />
         <FitBounds listings={listings} subject={subject} />
 
-        {listings.map((l) =>
-          l.lat != null && l.lng != null ? (
+        {/* Halo rings behind selected pins */}
+        {selectedKeys &&
+          listings.map((l) =>
+            l.lat != null && l.lng != null && selectedKeys.has(l.listingKey) ? (
+              <CircleMarker
+                key={`halo-${l.listingKey}`}
+                center={[l.lat, l.lng]}
+                radius={16}
+                interactive={false}
+                pathOptions={{
+                  color: STATUS_COLOR[l.status] ?? "#64748b",
+                  weight: 2.5,
+                  dashArray: "4 4",
+                  fillColor: STATUS_COLOR[l.status] ?? "#64748b",
+                  fillOpacity: 0.15,
+                }}
+              />
+            ) : null
+          )}
+
+        {listings.map((l) => {
+          if (l.lat == null || l.lng == null) return null;
+          const isSelected = selectedKeys?.has(l.listingKey) ?? false;
+          return (
             <CircleMarker
               key={l.listingKey}
               center={[l.lat, l.lng]}
-              radius={8}
+              radius={isSelected ? 10 : 8}
               pathOptions={{
                 color: "#ffffff",
-                weight: 2,
+                weight: isSelected ? 3 : 2,
                 fillColor: STATUS_COLOR[l.status] ?? "#64748b",
-                fillOpacity: 0.95,
+                // Dim unselected pins once a selection exists, so picks stand out
+                fillOpacity: isSelected ? 1 : hasSelection ? 0.45 : 0.95,
               }}
               eventHandlers={onSelect ? { click: () => onSelect(l.listingKey) } : undefined}
             >
@@ -119,8 +146,8 @@ export default function MarketMap({
                 </div>
               </Popup>
             </CircleMarker>
-          ) : null
-        )}
+          );
+        })}
 
         {subject && (
           <Marker position={[subject.lat, subject.lng]} icon={homeIcon} zIndexOffset={1000}>
@@ -144,6 +171,14 @@ export default function MarketMap({
             </span>
           </div>
         ))}
+        {hasSelection && (
+          <div className="flex items-center gap-1.5 pl-1 border-l border-slate-200">
+            <span className="w-3.5 h-3.5 rounded-full border-2 border-dashed border-slate-500 flex items-center justify-center">
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
+            </span>
+            <span className="text-[11px] font-semibold text-slate-600">Selected</span>
+          </div>
+        )}
         <div className="flex items-center gap-1.5 pl-1 border-l border-slate-200">
           <span className="text-xs">🏠</span>
           <span className="text-[11px] font-semibold text-slate-600">Your home</span>

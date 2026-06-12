@@ -157,6 +157,7 @@ export default function CmaBuilder() {
             <div className="flex-1 p-3">
               <MarketMap
                 height="100%"
+                selectedKeys={selectedKeys}
                 listings={results
                   .filter((p) => p.latitude && p.longitude)
                   .map((p) => ({
