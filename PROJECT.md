@@ -109,6 +109,48 @@ profile (paint colors, appliance models, contractor contacts).
   with white ring; subject home = pulsing red marker. Derek explicitly rejected
   dark map tiles.
 
+## Session log — June 12 2026 (most recent work, read this first)
+
+Everything below is built, verified in the browser, and pushed:
+
+1. **Live stats expanded**: avg DOM for actives AND solds + list-to-sell ratio
+   (sold÷list %) in both the portal market tab (6 stat cards with plain-English
+   subtexts) and the CMA Builder tray (DOM Sold/Active dual pill, List→Sell
+   pill, green ≥100% / blue below).
+2. **Dev persona switcher** (`client/src/components/PersonaSwitcher.tsx`):
+   floating pill bottom-right on every screen, one click cycles
+   Realtor/Seller/CMA Client/Buyer. DEV-only (import.meta.env.DEV).
+3. **Builder list polish**: 96x64 photo thumbnails (gotcha: Tailwind preflight
+   `img{max-width:100%}` collapses imgs in auto-layout tables — fixed with
+   `max-w-none`), trimmed addresses, selection tray "Show all N" expands to a
+   scrollable grid of every selected comp.
+4. **Map selection indicators**: selected comps get dashed halo ring in status
+   color + bigger pin; unselected dim to 45% once a selection exists; legend
+   gains "Selected".
+5. **Staged criteria flow**: builder starts at 0 with empty filters; big live
+   counter climbs as criteria are picked; "Show N matches →" reveals list/map
+   (Matrix mental model: define search → run). List/Map toggle hidden until
+   reveal.
+6. **Per-status date ranges**: each enabled status gets its own window —
+   presets 30/60/90/180d/1yr/All or 📅 Custom calendar from–to. Active/Pending
+   filter by list date, Sold by sale date. Sold defaults 180d. MOI window
+   derives from sold window (`windowDays()` in types.ts).
+7. **BridgeSyncEngine field exposure** (separate repo, deployed): see below.
+   Local BridgeSyncEngine repo was 2 commits behind origin — synced before
+   changing (ALWAYS git fetch/compare in that repo before pushing; it
+   auto-deploys to production on push to main).
+8. **Adding more MLS fields later (e.g. Heating) is one line** in the
+   /api/v1/properties select in BridgeSyncEngine server/routes.ts — payload
+   has 379 fields (Heating, Cooling, Appliances, Roof, Flooring...). No
+   migration/backfill ever needed for read-only exposure. Pattern:
+   `heating: sql\`${properties.payload}->'Heating'\`.as('heating'),`
+
+**Where we left off / what's next**: Derek's priorities are (a) the report
+composer (Build CMA Report → snapshot + infographic), (b) the new buyer
+search/cart/alerts section (questions for Derek below), (c) Matrix-parity
+filter UI using the newly exposed fields. Demo data is seeded; dev personas
+work; all systems verified.
+
 ## Status — what is BUILT and working (as of June 2026)
 
 1. ✅ Scaffold, schema (all 13 tables pushed to DO), Express server, React shell
