@@ -91,22 +91,90 @@ Component + install date → lifespan alerts. Roof ~20–25yr, furnace/heat pump
 service reminders, warranty-expiry alerts, a quiet home-value pulse, and a "My Home"
 profile (paint colors, appliance models, contractor contacts).
 
-## Design language
+## Design language — TWO THEMES (Derek's explicit direction)
 
-Dark theme matching Derek's existing HTML reports: bg `#0d1117`, surface `#161b22`,
-border `#30363d`, Inter font, Chart.js. Accent blue `#388bfd`/`#58a6ff`, green
-`#3fb950`, amber `#f0b429`, red `#f85149`. Per-agent white-label overrides
-(colors, logo, photo) for commercialization.
+- **Client-facing surfaces (login + client portal): light, friendly, modern.**
+  Body `#f5f7fb`, white cards, `border-slate-200`, soft shadows, `rounded-2xl`,
+  slate text, accents blue `#2563eb` / green `#16a34a` / amber `#d97706` /
+  red `#dc2626`. Approachable "Airbnb-like" feel. Derek asked for this after
+  finding the dark portal unfriendly.
+- **Realtor workspace (CMA Builder, agent dashboard): dark pro theme** matching
+  Derek's HTML reports: bg `#0d1117`, surface `#161b22`, border `#30363d`,
+  accents `#388bfd`/`#58a6ff`, `#3fb950`, `#f0b429`, `#f85149`. These pages set
+  their own dark bg on their root div. (Derek may later ask to lighten this too.)
+- Inter font everywhere. Chart.js for report charts. Per-agent white-label
+  overrides (colors, logo, photo) planned for commercialization.
+- **Maps:** Leaflet + CARTO **Voyager** tiles (Google-style: blue water, labeled
+  roads) in `client/src/components/MarketMap.tsx`. Status pins blue/orange/green
+  with white ring; subject home = pulsing red marker. Derek explicitly rejected
+  dark map tiles.
 
-## Build order
+## Status — what is BUILT and working (as of June 2026)
 
-1. Search → Results → Include/Exclude (the core agent comp-selection flow) ← current
-2. Snapshot + report data assembly (lock comps, compute MOI/PSF/DOM)
-3. Client portal shell with the 4 lifecycle states
-4. Maintenance tracker + documents vault
+1. ✅ Scaffold, schema (all 13 tables pushed to DO), Express server, React shell
+2. ✅ **CMA Builder** (`/cma/new`, realtor-only): filter rail (status pills, price
+   presets, sub-area/type/layout chips, beds/baths steppers, 90/180/365-day comp
+   window), instant search (no submit button), sortable results table with photo
+   thumbs, List/Map toggle, property detail slide-over with photo carousel, and
+   the **selection tray** — docked photo cards + live CMA stats (avg sold/pending
+   PSF, DOM, MOI) with animated counting numbers. "Build CMA Report →" button is
+   a stub → the report composer is the next big build.
+3. ✅ **Client portal** with the 4 lifecycle views (status-driven, same login):
+   seller (overview/gauge/showings timeline + feedback chips, market, locked
+   evaluation, documents), prospect (market + evaluation + "Get an Updated
+   Evaluation" lead button → logs lead, POST /api/portal/request-evaluation),
+   buyer (maintenance tracker with lifespan bars + service-due alerts, area map,
+   documents — NO CMA by design).
+4. ✅ **Per-client market lens**: `properties.marketConfig` jsonb
+   `{subAreas, daysBack, minPrice, maxPrice, propertySubTypes}` drives
+   GET /api/portal/market/:propertyId (live MLS fetch, stats + map pins).
+5. ✅ Magic-link auth scaffolding (SMTP not configured yet) + **dev persona
+   logins** on the login page (dev-only route /api/auth/dev-login).
+
+## Demo personas (seeded via `npx tsx server/seed-demo.ts`, idempotent)
+
+- **Agent**: Derek (auto-seeded on first dev-login)
+- **Seller** carters@example.com → 2566 Steve Ellis Rd — Derek's REAL active
+  listing, pulled live from MLS API by the seed (photo, $2.39M, MLS 1037349);
+  6 showings w/ feedback, prob baseline 65%, locked CMA from Derek's actual
+  May 2026 evaluation (comps from his HTML report)
+- **Prospect** susan.m@example.com → 5417 Kenwill Dr (Hammond Bay, 60-day lens)
+- **Buyer** chens@example.com → a REAL sold Departure Bay listing (seed picks
+  the most recent one with photo+coords, e.g. 3120 Robin Hood Dr) + 4 home
+  components + documents
+
+## Gotchas / environment notes
+
+- Express reads **API_PORT** (3001), NOT PORT — dev tooling injects PORT for
+  Vite. Vite proxies /api → localhost:3001.
+- DO Postgres needs `&uselibpqcompat=true` on DATABASE_URL for drizzle-kit,
+  and your IP added to the cluster's Trusted Sources (Network Access tab).
+- MLS API numeric fields arrive as STRINGS — normalize with `num()` helper in
+  `client/src/pages/agent/cma/types.ts`.
+- MLS API filters one status per request → fetch per-status in parallel, merge,
+  dedupe on listingKey. "Closed" = sold. Sub-area/beds/sqft/year/layout filters
+  applied client-side.
+- `.claude/launch.json` exists for the preview tool (name: cma-tracker).
+
+## Next build steps (in priority order)
+
+1. **Report composer** — "Build CMA Report →" flow: pick/create client+property,
+   snapshot comps to `comparables`, set price options + warning text, render the
+   infographic (price cards, PSF/DOM/MOI charts via Chart.js, comp tables —
+   visual target = Derek's steve-ellis-cma HTML in repo history/downloads),
+   export PDF, mark sentToClientAt.
+2. **Admin client management** — create/edit clients + properties, set
+   marketConfig lens (sub-area picker + daysBack + price band), draw map
+   boundary (adapt AdminBoundaryDrawMap.tsx from Nanaimowebsite), flip property
+   status (cma→active→sold), enter showings/feedback (Leon's form).
+3. `market_snapshots` recording job + trend lines in portal.
+4. Probability engine: weighted auto-adjust (DOM, showings, MOI delta) — see
+   probability_config table; currently shows baseline only.
+5. SMTP for real magic links; production deploy to DO App Platform.
 
 ## Schema
 
-See `shared/schema.ts`. Tables: agents, clients, properties, cma_reports,
-comparables, showings, showing_feedback, probability_config, magic_tokens, session.
-Planned additions: market_snapshots, home_components, documents.
+See `shared/schema.ts`. Tables: agents, clients, properties (has marketConfig +
+compBoundary jsonb), cma_reports (compFilters jsonb), comparables, showings,
+showing_feedback, probability_config, market_snapshots, documents,
+home_components, magic_tokens, session.
