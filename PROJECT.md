@@ -156,6 +156,50 @@ profile (paint colors, appliance models, contractor contacts).
   applied client-side.
 - `.claude/launch.json` exists for the preview tool (name: cma-tracker).
 
+## NEW SECTION PLANNED — Buyer search + shopping cart (Derek, June 12 2026)
+
+Derek's direction, captured verbatim in spirit — not yet built:
+
+- **Buyer listing search**: buyers get a search experience reusing the CMA
+  Builder format (filter rail → results → map), but **Active listings only**
+  (no solds — same no-buyer's-remorse principle as the buyer portal).
+- **Shopping cart**: buyers add listings they like to a cart/favourites list.
+  Agent can see the cart (great signal for what they want). Likely tables:
+  `buyer_searches` (saved criteria per client, reuse CmaFilters/marketConfig
+  shape) and `buyer_cart_items` (clientId, listingKey, snapshot of key fields,
+  note, addedAt, status: saved/dismissed/toured).
+- **Saved search + email alerts**: agent (or buyer) saves a search with the
+  buyer's email; a scheduled job (node-cron, reuse BridgeSyncEngine pattern)
+  re-runs each saved search, diffs against previously-seen listingKeys, and
+  emails new matches. Needs: `seen_listings` tracking per search, SMTP setup
+  (not yet configured), unsubscribe link, frequency setting (instant/daily).
+- Open questions for Derek:
+  1. Do buyers self-serve sign up for searches, or always agent-created?
+  2. Should the cart sync into showing requests ("book a viewing" button)?
+  3. Email alert frequency: instant per listing, or daily digest?
+  4. Does the buyer search live in the existing buyer portal tab set, or as
+     its own "Find a Home" section for ALL client types?
+
+### BridgeSyncEngine API additions (deployed June 12 2026, commit 32cb34b)
+
+/api/v1/properties now also returns: `kitchensTotal`, `bedsOrDensTotal`,
+`fireplacesTotal`, `buildingAreaTotal`, `storiesTotal`, `parkingTotal`,
+`lotSizeAcres`. All payload-derived (no schema change, full-archive coverage).
+Rollback tag in that repo: `pre-cma-fields`.
+**Suite detection**: VIVA has no structured suite field (verified) — use
+kitchensTotal >= 2 as the proxy, optionally + remarks keyword ("suite").
+
+### Filter UI still to build in CMA Builder (Matrix parity)
+
+- View multi-select (City/Mountain/Valley/Lake/Ocean/River/Other) with
+  And/Or/Not modes — `view` array + `viewYN` already in API
+- Full layout list (add Duplex Front/Back, Side/Side, Up/Down, Split Level)
+- Separate List Price AND Sold Price range filters
+- Kitchens / Fireplaces / Storeys / Parking N+ steppers, Beds-or-Dens
+- Lot SqFt + Lot Acres ranges, SqFt Total (buildingAreaTotal) vs Fin SqFt
+- Strata fee range; "Has suite" toggle (kitchens >= 2)
+- Keep the rail clean: consider collapsible "More filters" section
+
 ## Next build steps (in priority order)
 
 1. **Report composer** — "Build CMA Report →" flow: pick/create client+property,
