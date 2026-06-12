@@ -4,6 +4,7 @@ import LoginPage from "./pages/Login";
 import AgentDashboard from "./pages/agent/Dashboard";
 import ClientDashboard from "./pages/client/Dashboard";
 import CmaBuilder from "./pages/agent/cma/CmaBuilder";
+import PersonaSwitcher from "./components/PersonaSwitcher";
 
 function App() {
   const { isLoading, isAuthenticated, isAgent } = useAuth();
@@ -17,6 +18,8 @@ function App() {
   }
 
   return (
+    <>
+    {import.meta.env.DEV && <PersonaSwitcher />}
     <Switch>
       <Route path="/login" component={LoginPage} />
       <Route path="/auth/verify">
@@ -40,6 +43,7 @@ function App() {
         <Redirect to={isAuthenticated ? "/dashboard" : "/login"} />
       </Route>
     </Switch>
+    </>
   );
 }
 

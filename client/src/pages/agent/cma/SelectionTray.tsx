@@ -40,11 +40,12 @@ const STATUS_DOT: Record<string, string> = {
 
 export default function SelectionTray({ selected, stats, onRemove, onFinalize }: Props) {
   const open = selected.length > 0;
+  const [expanded, setExpanded] = useState(false);
 
   return (
     <div
       className={`shrink-0 border-t border-[#21262d] bg-[#0d1117]/95 backdrop-blur-md transition-all duration-300 ease-out overflow-hidden ${
-        open ? "max-h-64" : "max-h-12"
+        !open ? "max-h-12" : expanded ? "max-h-[60vh]" : "max-h-72"
       }`}
     >
       {/* Live stats bar */}
@@ -109,47 +110,70 @@ export default function SelectionTray({ selected, stats, onRemove, onFinalize }:
 
       {/* Selected comp cards */}
       {open && (
-        <div className="flex gap-2 px-4 pb-3 overflow-x-auto">
-          {selected.map((p) => {
-            const price = effectivePrice(p);
-            const pPsf = psf(p);
-            return (
-              <div
-                key={p.listingKey}
-                className="group relative shrink-0 w-44 bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden hover:border-[#484f58] transition-all duration-200 animate-[slideUp_.25s_ease-out]"
-              >
-                <div className="relative h-16">
-                  {p.mainPhotoUrl ? (
-                    <img src={p.mainPhotoUrl} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-[#21262d] flex items-center justify-center text-[#30363d]">🏠</div>
-                  )}
-                  <div
-                    className="absolute top-1.5 left-1.5 w-2 h-2 rounded-full ring-2 ring-black/40"
-                    style={{ background: STATUS_DOT[p.status] ?? "#8b949e" }}
-                  />
-                  <button
-                    onClick={() => onRemove(p)}
-                    className="absolute top-1 right-1 w-5 h-5 rounded-md bg-black/60 text-white/70 hover:bg-[#da3633] hover:text-white text-[10px] opacity-0 group-hover:opacity-100 transition-all"
-                  >
-                    ✕
-                  </button>
-                </div>
-                <div className="p-2">
-                  <div className="text-[10px] font-semibold text-white truncate">{p.address}</div>
-                  <div className="flex items-baseline justify-between mt-0.5">
-                    <span className="text-[11px] font-bold text-[#e6edf3] tabular-nums">
-                      {price ? `$${(price / 1000).toFixed(0)}K` : "—"}
-                    </span>
-                    <span className="text-[9px] text-[#484f58] tabular-nums">
-                      {pPsf ? `$${Math.round(pPsf)}/sf` : ""}
-                    </span>
+        <>
+          <div className="flex items-center justify-between px-4 pb-1.5">
+            <span className="text-[9px] font-bold uppercase tracking-widest text-[#484f58]">
+              Selected comps · {selected.length}
+            </span>
+            <button
+              onClick={() => setExpanded((e) => !e)}
+              className="text-[10px] font-bold text-[#58a6ff] hover:text-[#79b8ff] transition-colors px-2 py-0.5 rounded-md hover:bg-[#1f3a5f]/40"
+            >
+              {expanded ? "Collapse ▾" : `Show all ${selected.length} ▴`}
+            </button>
+          </div>
+          <div
+            className={
+              expanded
+                ? "grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-2 px-4 pb-3 overflow-y-auto max-h-[calc(60vh-110px)]"
+                : "flex gap-2 px-4 pb-3 overflow-x-auto"
+            }
+          >
+            {selected.map((p) => {
+              const price = effectivePrice(p);
+              const pPsf = psf(p);
+              return (
+                <div
+                  key={p.listingKey}
+                  className={`group relative bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden hover:border-[#484f58] transition-all duration-200 animate-[slideUp_.25s_ease-out] ${
+                    expanded ? "" : "shrink-0 w-48"
+                  }`}
+                >
+                  <div className="relative h-20">
+                    {p.mainPhotoUrl ? (
+                      <img src={p.mainPhotoUrl} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-[#21262d] flex items-center justify-center text-[#30363d]">🏠</div>
+                    )}
+                    <div
+                      className="absolute top-1.5 left-1.5 w-2 h-2 rounded-full ring-2 ring-black/40"
+                      style={{ background: STATUS_DOT[p.status] ?? "#8b949e" }}
+                    />
+                    <button
+                      onClick={() => onRemove(p)}
+                      className="absolute top-1 right-1 w-5 h-5 rounded-md bg-black/60 text-white/70 hover:bg-[#da3633] hover:text-white text-[10px] opacity-0 group-hover:opacity-100 transition-all"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div className="p-2">
+                    <div className="text-[10px] font-semibold text-white truncate">
+                      {(p.address ?? "").replace(/, Nanaimo BC.*$/, "")}
+                    </div>
+                    <div className="flex items-baseline justify-between mt-0.5">
+                      <span className="text-[11px] font-bold text-[#e6edf3] tabular-nums">
+                        {price ? `$${(price / 1000).toFixed(0)}K` : "—"}
+                      </span>
+                      <span className="text-[9px] text-[#484f58] tabular-nums">
+                        {pPsf ? `$${Math.round(pPsf)}/sf` : ""}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        </>
       )}
 
       <style>{`

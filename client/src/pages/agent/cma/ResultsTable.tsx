@@ -121,24 +121,26 @@ export default function ResultsTable({ properties, selectedKeys, onToggle, onIns
                   </div>
                 </td>
                 {/* Thumbnail */}
-                <td className="py-2 pr-1">
+                <td className="py-2.5 pr-2">
                   {p.mainPhotoUrl ? (
                     <img
                       src={p.mainPhotoUrl}
                       alt=""
                       loading="lazy"
-                      className="w-11 h-9 object-cover rounded-md border border-[#21262d] group-hover:scale-105 transition-transform duration-200"
+                      className="w-24 h-16 max-w-none object-cover rounded-lg border border-[#21262d] group-hover:scale-[1.03] transition-transform duration-200"
                     />
                   ) : (
-                    <div className="w-11 h-9 rounded-md bg-[#161b22] border border-[#21262d] flex items-center justify-center text-[#30363d] text-xs">
+                    <div className="w-24 h-16 rounded-lg bg-[#161b22] border border-[#21262d] flex items-center justify-center text-[#30363d] text-lg">
                       🏠
                     </div>
                   )}
                 </td>
                 <td className="px-3 py-2">
-                  <div className="text-[13px] font-semibold text-white leading-tight">{p.address ?? "—"}</div>
-                  <div className="text-[10px] text-[#484f58] mt-0.5">
-                    {p.subArea?.replace(/^Na /, "")} {p.layout ? `· ${p.layout}` : ""}
+                  <div className="text-[13px] font-semibold text-white leading-tight whitespace-nowrap">
+                    {(p.address ?? "—").replace(/, Nanaimo BC.*$/, "")}
+                  </div>
+                  <div className="text-[10px] text-[#484f58] mt-1 whitespace-nowrap">
+                    {p.subArea?.replace(/^Na /, "")} {p.layout ? `· ${p.layout.replace("Main Level Entry with", "Main +")}` : ""}
                   </div>
                 </td>
                 <td className="px-3">
