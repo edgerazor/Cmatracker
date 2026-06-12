@@ -74,9 +74,20 @@ export default function SelectionTray({ selected, stats, onRemove, onFinalize }:
           value={<AnimatedNumber value={stats.avgPendingPsf} format={(n) => `$${Math.round(n)}`} />}
         />
         <StatPill
-          label="Avg DOM (Sold)"
+          label="DOM Sold / Active"
           color="#f0b429"
-          value={<AnimatedNumber value={stats.avgDomSold} format={(n) => `${Math.round(n)}d`} />}
+          value={
+            <>
+              <AnimatedNumber value={stats.avgDomSold} format={(n) => `${Math.round(n)}d`} />
+              <span className="text-[#484f58] mx-0.5">/</span>
+              <AnimatedNumber value={stats.avgDomActive} format={(n) => `${Math.round(n)}d`} />
+            </>
+          }
+        />
+        <StatPill
+          label="List → Sell"
+          color={stats.listToSellPct != null && stats.listToSellPct >= 100 ? "#3fb950" : "#58a6ff"}
+          value={<AnimatedNumber value={stats.listToSellPct} format={(n) => `${n.toFixed(1)}%`} />}
         />
         <StatPill
           label="Months of Inventory"

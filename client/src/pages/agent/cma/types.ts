@@ -116,6 +116,8 @@ export interface LiveStats {
   avgPendingPsf: number | null;
   avgActivePsf: number | null;
   avgDomSold: number | null;
+  avgDomActive: number | null;
+  listToSellPct: number | null; // avg sold÷list price across sold comps, as %
   monthsOfInventory: number | null; // activeCount / (soldCount / windowMonths)
 }
 
@@ -140,6 +142,13 @@ export function computeLiveStats(
       ? totalActiveInMarket / (sold.length / windowMonths)
       : null;
 
+  const ratios = sold
+    .map((p) => {
+      const sp = num(p.closePrice), lp = num(p.listPrice);
+      return sp && lp ? sp / lp : null;
+    })
+    .filter((v): v is number => v != null);
+
   return {
     soldCount: sold.length,
     pendingCount: pending.length,
@@ -148,6 +157,8 @@ export function computeLiveStats(
     avgPendingPsf: avg(psfs(pending)),
     avgActivePsf: avg(psfs(active)),
     avgDomSold: avg(sold.map((p) => p.daysOnMarket).filter((v): v is number => v != null)),
+    avgDomActive: avg(active.map((p) => p.daysOnMarket).filter((v): v is number => v != null)),
+    listToSellPct: ratios.length ? avg(ratios)! * 100 : null,
     monthsOfInventory: moi,
   };
 }

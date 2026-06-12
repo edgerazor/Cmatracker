@@ -137,6 +137,7 @@ router.get("/market/:propertyId", requirePortalUser, async (req, res) => {
       address: l.address,
       status: l.status,
       price: l.status === "Closed" ? num(l.closePrice) ?? num(l.listPrice) : num(l.listPrice),
+      listPrice: num(l.listPrice),
       sqft: num(l.squareFeet),
       beds: l.bedrooms,
       baths: l.bathrooms,
@@ -157,6 +158,11 @@ router.get("/market/:propertyId", requirePortalUser, async (req, res) => {
   const windowMonths = daysBack / 30.44;
   const moi = sold.length ? active.length / (sold.length / windowMonths) : null;
 
+  // List-to-sell ratio: sold price ÷ list price, averaged across solds
+  const ratios = sold
+    .map((l) => (l.price && l.listPrice ? l.price / l.listPrice : null))
+    .filter((v): v is number => v != null);
+
   res.json({
     config: { ...cfg, daysBack },
     listings: mapped,
@@ -168,6 +174,8 @@ router.get("/market/:propertyId", requirePortalUser, async (req, res) => {
       avgActivePsf: avg(psfs(active)),
       monthsOfInventory: moi,
       avgDomSold: avg(sold.map((l) => l.dom).filter((v): v is number => v != null)),
+      avgDomActive: avg(active.map((l) => l.dom).filter((v): v is number => v != null)),
+      listToSellPct: avg(ratios) != null ? avg(ratios)! * 100 : null,
     },
   });
 });

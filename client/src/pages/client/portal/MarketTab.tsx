@@ -12,6 +12,8 @@ interface MarketData {
     avgActivePsf: number | null;
     monthsOfInventory: number | null;
     avgDomSold: number | null;
+    avgDomActive: number | null;
+    listToSellPct: number | null;
   };
 }
 
@@ -57,13 +59,31 @@ export default function MarketTab({
       </p>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard label="Active Listings" value={stats.activeCount} color="text-blue-600" />
-        <StatCard label="Sold" value={stats.soldCount} color="text-green-600" />
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <StatCard label="Active Listings" value={stats.activeCount} color="text-blue-600"
+          sub={stats.avgDomActive != null ? `${Math.round(stats.avgDomActive)} days on market avg` : undefined} />
+        <StatCard label="Sold" value={stats.soldCount} color="text-green-600"
+          sub={stats.avgDomSold != null ? `Sold in ${Math.round(stats.avgDomSold)} days avg` : undefined} />
         <StatCard
           label="Avg Sold $/SqFt"
           value={stats.avgSoldPsf ? `$${Math.round(stats.avgSoldPsf)}` : "—"}
           color="text-green-600"
+        />
+        <StatCard
+          label="Avg Days on Market"
+          value={stats.avgDomActive != null ? `${Math.round(stats.avgDomActive)}d` : "—"}
+          color="text-amber-600"
+          sub={stats.avgDomSold != null ? `vs ${Math.round(stats.avgDomSold)}d for homes that sold` : "Current active listings"}
+        />
+        <StatCard
+          label="List-to-Sell Ratio"
+          value={stats.listToSellPct != null ? `${stats.listToSellPct.toFixed(1)}%` : "—"}
+          color={stats.listToSellPct != null && stats.listToSellPct >= 100 ? "text-green-600" : "text-blue-600"}
+          sub={
+            stats.listToSellPct == null ? "Sold price vs. asking price"
+            : stats.listToSellPct >= 100 ? "Homes selling at or above asking"
+            : `Sellers accepting ~${(100 - stats.listToSellPct).toFixed(1)}% below asking`
+          }
         />
         <StatCard
           label="Months of Inventory"
